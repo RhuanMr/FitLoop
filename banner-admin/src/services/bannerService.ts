@@ -3,6 +3,8 @@ import { Banner } from '../types/Banner';
 
 const API_URL = 'http://localhost:4000/banners';
 
+// TODO: Pesquisar componentes para excluir e editar banners
+
 export interface BannerListResponse {
   banners: Banner[];
   total: number;
