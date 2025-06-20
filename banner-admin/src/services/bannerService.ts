@@ -24,3 +24,8 @@ export async function createBanner(formData: FormData): Promise<Banner> {
   });
   return response.data;
 }
+
+// Deletar banner por id
+export async function deleteBanner(id: number): Promise<void> {
+  await axios.delete(`${API_URL}/${id}`);
+}

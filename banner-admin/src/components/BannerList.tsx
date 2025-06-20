@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Banner } from '../types/Banner';
-import { getBanners } from '../services/bannerService';
+import { getBanners, deleteBanner } from '../services/bannerService';
 import {
   Paper,
   Typography,
@@ -11,17 +11,51 @@ import {
   Avatar,
   CircularProgress,
   Box,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const BannerList: React.FC = () => {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const fetchBanners = () => {
+    setLoading(true);
+    getBanners()
+      .then((data) => setBanners(data.banners ?? []))
+      .finally(() => setLoading(false));
+  };
 
   useEffect(() => {
-    getBanners()
-      .then((data) => setBanners(data.banners ?? [])) // <-- Corrigido aqui
-      .finally(() => setLoading(false));
+    fetchBanners();
   }, []);
+
+  const handleDeleteClick = (id: number) => {
+    setDeleteId(id);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleteId !== null) {
+      await deleteBanner(deleteId);
+      setDeleteId(null);
+      setConfirmOpen(false);
+      fetchBanners();
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteId(null);
+    setConfirmOpen(false);
+  };
 
   if (loading) {
     return (
@@ -38,7 +72,18 @@ const BannerList: React.FC = () => {
       </Typography>
       <List>
         {banners.map((banner) => (
-          <ListItem key={banner.id} alignItems="flex-start">
+          <ListItem key={banner.id} alignItems="flex-start"
+            secondaryAction={
+              <IconButton
+                edge="end"
+                aria-label="delete"
+                color="error"
+                onClick={() => handleDeleteClick(banner.id!)}
+              >
+                <DeleteIcon />
+              </IconButton>
+            }
+          >
             <ListItemAvatar>
               <Avatar
                 variant="rounded"
@@ -59,6 +104,23 @@ const BannerList: React.FC = () => {
           Nenhum banner cadastrado.
         </Typography>
       )}
+
+      <Dialog open={confirmOpen} onClose={handleCancelDelete}>
+        <DialogTitle>Confirmar exclusão</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Tem certeza que deseja excluir este banner? Esta ação não pode ser desfeita.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete} color="primary">
+            Cancelar
+          </Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained">
+            Excluir
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 };
