@@ -19,7 +19,7 @@ const BannerList: React.FC = () => {
 
   useEffect(() => {
     getBanners()
-      .then((data) => setBanners(data))
+      .then((data) => setBanners(data.banners ?? [])) // <-- Corrigido aqui
       .finally(() => setLoading(false));
   }, []);
 
