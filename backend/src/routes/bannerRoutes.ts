@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import { uploadBanner, getBanners, updateBanner } from '../controllers/bannerController';
+import { uploadBanner, getBanners, updateBanner, deleteBanner } from '../controllers/bannerController';
 
 const router = express.Router();
 const upload = multer();
@@ -18,6 +18,11 @@ router.put('/:id', upload.single('imagem'), (req, res, next) => {
 // GET /banners (listagem paginada e filtrada)
 router.get('/', (req, res, next) => {
   getBanners(req, res).catch(next);
+});
+
+// DELETE /banners/:id
+router.delete('/:id', (req, res, next) => {
+  deleteBanner(req, res).catch(next);
 });
 
 export default router;

@@ -147,4 +147,40 @@ export const getBanners = async (req: Request, res: Response) => {
     page: pageNum,
     totalPages
   });
-};
+}
+
+// DELETE /banners/:id
+export async function deleteBanner(req: Request, res: Response) {
+  const { id } = req.params;
+
+  // Busca o banner atual para remover a imagem do storage
+  const { data: banner, error: findError } = await supabase
+    .from('banners')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (findError || !banner) {
+    return res.status(404).json({ error: 'Banner não encontrado' });
+  }
+
+  // Remove imagem do storage, se existir
+  if (banner.url_image) {
+    const fileName = banner.url_image.split('/').pop();
+    if (fileName) {
+      await supabase.storage.from(process.env.BUCKET_NAME!).remove([fileName]);
+    }
+  }
+
+  // Remove o registro do banco
+  const { error } = await supabase
+    .from('banners')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    return res.status(500).json({ error });
+  }
+
+  return res.json({ success: true });
+}
