@@ -7,7 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "ts-node-dev src/server.ts",
     "seed": "ts-node src/seeders/seedBanners.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "check-schema": "ts-node src/migrations/checkAndFixSchema.ts",
+    "fix-db": "ts-node src/migrations/fixDatabase.ts",
+    "test-db": "ts-node src/migrations/simpleFix.ts"
   },
   "keywords": [],
   "author": "",

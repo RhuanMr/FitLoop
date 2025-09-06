@@ -9,55 +9,98 @@ function isValidStatus(status: any): status is BannerStatus {
 }
 
 export async function uploadBanner(req: Request, res: Response) {
-  const file = req.file;
-  const { title, exhibition_order, description, status } = req.body;
+  try {
+    console.log('=== UPLOAD BANNER DEBUG ===');
+    console.log('Body:', req.body);
+    console.log('File:', req.file);
+    
+    const file = req.file;
+    const { title, exhibition_order, description, status, scheduled_start, scheduled_end } = req.body;
 
-  if (!title || !exhibition_order) {
-    return res.status(400).json({ error: 'title e exhibition_order são obrigatórios' });
-  }
-  if (status && !isValidStatus(status)) {
-    return res.status(400).json({ error: 'status inválido' });
-  }
+    if (!title || !exhibition_order) {
+      console.log('Erro: title ou exhibition_order não fornecidos');
+      return res.status(400).json({ error: 'title e exhibition_order são obrigatórios' });
+    }
+    if (status && !isValidStatus(status)) {
+      console.log('Erro: status inválido:', status);
+      return res.status(400).json({ error: 'status inválido' });
+    }
 
-  let publicUrl = '';
-  if (file) {
-    const fileExt = file.originalname.split('.').pop();
-    const fileName = `${uuidv4()}.${fileExt}`;
-    const { error } = await supabase.storage
-      .from(process.env.BUCKET_NAME!)
-      .upload(fileName, file.buffer, {
-        contentType: file.mimetype,
-        upsert: false
-      });
-    if (error) return res.status(500).json({ error });
+    let publicUrl = '';
+    if (file) {
+      console.log('Fazendo upload do arquivo...');
+      console.log('Bucket name:', process.env.BUCKET_NAME);
+      console.log('File name:', file.originalname);
+      console.log('File size:', file.size);
+      
+      const fileExt = file.originalname.split('.').pop();
+      const fileName = `${uuidv4()}.${fileExt}`;
+      
+      const { error } = await supabase.storage
+        .from(process.env.BUCKET_NAME!)
+        .upload(fileName, file.buffer, {
+          contentType: file.mimetype,
+          upsert: false
+        });
+      
+      if (error) {
+        console.log('Erro no upload do arquivo:', error);
+        return res.status(500).json({ error: `Erro no upload: ${error.message}` });
+      }
 
-    publicUrl = supabase.storage
-      .from(process.env.BUCKET_NAME!)
-      .getPublicUrl(fileName).data.publicUrl;
-  } else {
-    return res.status(400).json({ error: 'Arquivo não enviado' });
-  }
+      publicUrl = supabase.storage
+        .from(process.env.BUCKET_NAME!)
+        .getPublicUrl(fileName).data.publicUrl;
+        
+      console.log('Upload realizado com sucesso. URL:', publicUrl);
+    } else {
+      console.log('Erro: Arquivo não enviado');
+      return res.status(400).json({ error: 'Arquivo não enviado' });
+    }
 
-  const { data, error: insertError } = await supabase
-    .from('banners')
-    .insert([{
+    console.log('Inserindo banner no banco de dados...');
+    // Preparar dados para inserção
+    const bannerData: any = {
       title,
       url_image: publicUrl,
       exhibition_order: Number(exhibition_order),
       description,
       status: status || 'active'
-    }])
-    .select();
+    };
+    
+    // Adicionar campos de agendamento apenas se existirem
+    if (scheduled_start) {
+      bannerData.scheduled_start = scheduled_start;
+    }
+    if (scheduled_end) {
+      bannerData.scheduled_end = scheduled_end;
+    }
+    
+    console.log('Dados para inserção:', bannerData);
+    
+    const { data, error: insertError } = await supabase
+      .from('banners')
+      .insert([bannerData])
+      .select();
 
-  if (insertError) return res.status(500).json({ error: insertError });
+    if (insertError) {
+      console.log('Erro ao inserir no banco:', insertError);
+      return res.status(500).json({ error: `Erro no banco: ${insertError.message}` });
+    }
 
-  return res.json({ success: true, data });
+    console.log('Banner inserido com sucesso:', data);
+    return res.json({ success: true, data });
+    
+  } catch (error) {
+    console.log('Erro geral no uploadBanner:', error);
+    return res.status(500).json({ error: `Erro interno: ${error instanceof Error ? error.message : 'Erro desconhecido'}` });
+  }
 }
 
 // PUT /banners/:id
 export async function updateBanner(req: Request, res: Response) {
   const { id } = req.params;
-  const { title, exhibition_order, description, status } = req.body;
+  const { title, exhibition_order, description, status, scheduled_start, scheduled_end } = req.body;
   const file = req.file;
 
   if (status && !isValidStatus(status)) {
@@ -105,6 +148,8 @@ export async function updateBanner(req: Request, res: Response) {
   if (description !== undefined) updateObj.description = description;
   if (status !== undefined) updateObj.status = status;
   if (url_image !== undefined) updateObj.url_image = url_image;
+  if (scheduled_start !== undefined) updateObj.scheduled_start = scheduled_start || null;
+  if (scheduled_end !== undefined) updateObj.scheduled_end = scheduled_end || null;
 
   const { data, error } = await supabase
     .from('banners')
@@ -117,36 +162,87 @@ export async function updateBanner(req: Request, res: Response) {
   return res.json({ success: true, data });
 }
 
-// GET /banners?page=1&limit=10&status=active
+// GET /banners?page=1&limit=10&status=active&include_scheduled=true
 export const getBanners = async (req: Request, res: Response) => {
-  const { page = 1, limit = 10, status } = req.query;
-  const pageNum = Number(page) || 1;
-  const limitNum = Number(limit) || 10;
-  const offset = (pageNum - 1) * limitNum;
+  try {
+    console.log('=== GET BANNERS DEBUG ===');
+    console.log('Query params:', req.query);
+    
+    const { page = 1, limit = 10, status, include_scheduled } = req.query;
+    const pageNum = Number(page) || 1;
+    const limitNum = Number(limit) || 10;
+    const offset = (pageNum - 1) * limitNum;
+    const now = new Date().toISOString();
 
-  let query = supabase
-    .from('banners')
-    .select('*', { count: 'exact' })
-    .order('exhibition_order', { ascending: true })
-    .range(offset, offset + limitNum - 1);
+    let query = supabase
+      .from('banners')
+      .select('*', { count: 'exact' })
+      .order('exhibition_order', { ascending: true })
+      .range(offset, offset + limitNum - 1);
 
-  if (status && isValidStatus(status)) {
-    query = query.eq('status', status);
+    if (status && isValidStatus(status)) {
+      query = query.eq('status', status);
+    }
+
+    // Se include_scheduled for false, filtra apenas banners que estão no período de exibição
+    if (include_scheduled === 'false') {
+      // Por enquanto, vamos buscar todos os banners e filtrar no código
+      // TODO: Implementar filtro mais complexo no Supabase
+      console.log('Filtro de agendamento será aplicado no código');
+    }
+
+    console.log('Executando query...');
+    const { data, error, count } = await query;
+
+    if (error) {
+      console.log('Erro na query:', error);
+      return res.status(500).json({ error: `Erro na consulta: ${error.message}` });
+    }
+
+    let filteredData = data || [];
+    
+    // Aplicar filtro de agendamento se necessário
+    if (include_scheduled === 'false') {
+      filteredData = filteredData.filter(banner => {
+        const nowDate = new Date(now);
+        const startDate = banner.scheduled_start ? new Date(banner.scheduled_start) : null;
+        const endDate = banner.scheduled_end ? new Date(banner.scheduled_end) : null;
+        
+        // Banner está no período se:
+        // - Não tem data de início OU data de início já passou
+        // - E não tem data de fim OU data de fim ainda não chegou
+        const isAfterStart = !startDate || nowDate >= startDate;
+        const isBeforeEnd = !endDate || nowDate <= endDate;
+        
+        const isInPeriod = isAfterStart && isBeforeEnd;
+        
+        console.log(`Banner "${banner.title}":`, {
+          scheduled_start: banner.scheduled_start,
+          scheduled_end: banner.scheduled_end,
+          isAfterStart,
+          isBeforeEnd,
+          isInPeriod
+        });
+        
+        return isInPeriod;
+      });
+    }
+
+    const total = filteredData.length;
+    const totalPages = Math.ceil(total / limitNum);
+
+    console.log('Query executada com sucesso. Banners encontrados:', filteredData.length);
+    return res.json({
+      banners: filteredData,
+      total,
+      page: pageNum,
+      totalPages
+    });
+    
+  } catch (error) {
+    console.log('Erro geral no getBanners:', error);
+    return res.status(500).json({ error: `Erro interno: ${error instanceof Error ? error.message : 'Erro desconhecido'}` });
   }
-
-  const { data, error, count } = await query;
-
-  if (error) return res.status(500).json({ error });
-
-  const total = count || 0;
-  const totalPages = Math.ceil(total / limitNum);
-
-  return res.json({
-    banners: data,
-    total,
-    page: pageNum,
-    totalPages
-  });
 }
 
 // DELETE /banners/:id

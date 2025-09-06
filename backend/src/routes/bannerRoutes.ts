@@ -3,11 +3,21 @@ import multer from 'multer';
 import { uploadBanner, getBanners, updateBanner, deleteBanner } from '../controllers/bannerController';
 
 const router = express.Router();
-const upload = multer();
+const upload = multer({
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+  },
+});
 
 // POST /banners/upload
-router.post('/upload', upload.single('imagem'), (req, res, next) => {
-  uploadBanner(req, res).catch(next);
+router.post('/upload', (req, res, next) => {
+  upload.single('imagem')(req, res, (err) => {
+    if (err) {
+      console.log('Erro no multer:', err);
+      return res.status(400).json({ error: `Erro no upload: ${err.message}` });
+    }
+    uploadBanner(req, res).catch(next);
+  });
 });
 
 // PUT /banners/:id (edição)

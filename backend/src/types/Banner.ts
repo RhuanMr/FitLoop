@@ -8,4 +8,6 @@ export interface Banner {
   description?: string;
   status?: BannerStatus;
   created_at?: string;
+  scheduled_start?: string;
+  scheduled_end?: string;
 }

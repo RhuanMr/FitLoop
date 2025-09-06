@@ -16,6 +16,16 @@ const validationSchema = Yup.object({
   description: Yup.string(),
   status: Yup.string().oneOf(['active', 'inactive', 'archived']).required('Status obrigatório'),
   imagem: Yup.mixed().required('Imagem obrigatória'),
+  scheduled_start: Yup.string().nullable(),
+  scheduled_end: Yup.string().nullable().test(
+    'is-after-start',
+    'Data de fim deve ser posterior à data de início',
+    function(value) {
+      const { scheduled_start } = this.parent;
+      if (!value || !scheduled_start) return true;
+      return new Date(value) > new Date(scheduled_start);
+    }
+  ),
 });
 
 const BannerForm: React.FC = () => {
@@ -28,25 +38,46 @@ const BannerForm: React.FC = () => {
       description: '',
       status: 'active' as BannerStatus,
       imagem: null as File | null,
+      scheduled_start: '',
+      scheduled_end: '',
     },
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
       try {
+        console.log('=== SUBMIT FORM DEBUG ===');
+        console.log('Values:', values);
+        console.log('Imagem:', values.imagem);
+        
         const formData = new FormData();
         formData.append('title', values.title);
         formData.append('exhibition_order', String(values.exhibition_order));
         formData.append('description', values.description);
         formData.append('status', values.status);
+        if (values.scheduled_start) {
+          formData.append('scheduled_start', values.scheduled_start);
+        }
+        if (values.scheduled_end) {
+          formData.append('scheduled_end', values.scheduled_end);
+        }
         if (values.imagem) {
           formData.append('imagem', values.imagem);
+          console.log('Imagem adicionada ao FormData:', values.imagem.name);
+        } else {
+          console.log('ERRO: Nenhuma imagem selecionada!');
+          alert('Por favor, selecione uma imagem');
+          return;
         }
 
-        await createBanner(formData);
+        console.log('Enviando FormData...');
+        const result = await createBanner(formData);
+        console.log('Resultado:', result);
+        
         resetForm();
         if (fileInputRef.current) fileInputRef.current.value = '';
         alert('Banner cadastrado com sucesso!');
       } catch (error) {
-        alert('Erro ao cadastrar banner');
+        console.error('Erro no submit:', error);
+        alert(`Erro ao cadastrar banner: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
       }
     },
   });
@@ -110,11 +141,37 @@ const BannerForm: React.FC = () => {
           <MenuItem value="inactive">Inativo</MenuItem>
           <MenuItem value="archived">Arquivado</MenuItem>
         </TextField>
+        <TextField
+          label="Data/Hora de Início (Opcional)"
+          name="scheduled_start"
+          type="datetime-local"
+          value={formik.values.scheduled_start}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.scheduled_start && Boolean(formik.errors.scheduled_start)}
+          helperText={formik.touched.scheduled_start && formik.errors.scheduled_start}
+          InputLabelProps={{
+            shrink: true,
+          }}
+        />
+        <TextField
+          label="Data/Hora de Fim (Opcional)"
+          name="scheduled_end"
+          type="datetime-local"
+          value={formik.values.scheduled_end}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.scheduled_end && Boolean(formik.errors.scheduled_end)}
+          helperText={formik.touched.scheduled_end && formik.errors.scheduled_end}
+          InputLabelProps={{
+            shrink: true,
+          }}
+        />
         <Button
           variant="contained"
           component="label"
         >
-          Selecionar Imagem
+          {formik.values.imagem ? `Imagem: ${formik.values.imagem.name}` : 'Selecionar Imagem'}
           <input
             ref={fileInputRef}
             type="file"
@@ -123,6 +180,7 @@ const BannerForm: React.FC = () => {
             hidden
             onChange={(event) => {
               const file = event.currentTarget.files?.[0] || null;
+              console.log('Arquivo selecionado:', file);
               formik.setFieldValue('imagem', file);
             }}
           />
@@ -130,6 +188,11 @@ const BannerForm: React.FC = () => {
         {formik.touched.imagem && formik.errors.imagem && (
           <Typography color="error" variant="caption">
             {formik.errors.imagem as string}
+          </Typography>
+        )}
+        {formik.values.imagem && (
+          <Typography variant="caption" color="success">
+            Arquivo selecionado: {formik.values.imagem.name} ({(formik.values.imagem.size / 1024 / 1024).toFixed(2)} MB)
           </Typography>
         )}
         <Button type="submit" variant="contained" color="primary">

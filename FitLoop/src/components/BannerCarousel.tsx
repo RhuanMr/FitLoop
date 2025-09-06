@@ -8,9 +8,22 @@ const { width } = Dimensions.get('window');
 const BannerCarousel: React.FC = () => {
   const [banners, setBanners] = useState<Banner[]>([]);
 
+  const fetchBanners = async () => {
+    try {
+      const data = await getBanners({ status: 'active', limit: 10, include_scheduled: false });
+      setBanners(data.banners ?? []);
+    } catch (error) {
+      console.error('Erro ao buscar banners:', error);
+    }
+  };
+
   useEffect(() => {
-    getBanners({ status: 'active', limit: 10 })
-      .then((data) => setBanners(data.banners ?? []));
+    fetchBanners();
+    
+    // Atualiza os banners a cada 30 segundos para verificar agendamentos
+    const interval = setInterval(fetchBanners, 30000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   if (banners.length === 0) {
