@@ -29,7 +29,7 @@ const BannerList: React.FC = () => {
 
   const fetchBanners = () => {
     setLoading(true);
-    getBanners()
+    getBanners({ include_scheduled: true }) // Buscar todos os banners, incluindo agendados
       .then((data) => setBanners(data.banners ?? []))
       .finally(() => setLoading(false));
   };
@@ -94,7 +94,28 @@ const BannerList: React.FC = () => {
             </ListItemAvatar>
             <ListItemText
               primary={banner.title}
-              secondary={`Ordem: ${banner.exhibition_order}`}
+              secondary={
+                <Box>
+                  <Typography variant="body2" component="span">
+                    Ordem: {banner.exhibition_order} | Status: {banner.status}
+                  </Typography>
+                  {banner.description && (
+                    <Typography variant="body2" color="text.secondary" display="block">
+                      {banner.description}
+                    </Typography>
+                  )}
+                  {banner.scheduled_start && (
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Início: {new Date(banner.scheduled_start).toLocaleString()}
+                    </Typography>
+                  )}
+                  {banner.scheduled_end && (
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Fim: {new Date(banner.scheduled_end).toLocaleString()}
+                    </Typography>
+                  )}
+                </Box>
+              }
             />
           </ListItem>
         ))}

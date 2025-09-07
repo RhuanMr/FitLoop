@@ -1,19 +1,20 @@
 import React from 'react';
 import './App.css';
-import { Container, CssBaseline, Box } from '@mui/material';
-import BannerList from './components/BannerList';
-import BannerForm from './components/BannerForm';
+import { CssBaseline } from '@mui/material';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import AdminDashboard from './components/AdminDashboard';
+import TVDisplay from './components/TVDisplay';
 
 function App() {
   return (
     <React.Fragment>
       <CssBaseline />
-      <Container maxWidth="md">
-        <Box my={4}>
-          <BannerForm />
-          <BannerList />
-        </Box>
-      </Container>
+      <Router>
+        <Routes>
+          <Route path="/" element={<AdminDashboard />} />
+          <Route path="/tv" element={<TVDisplay />} />
+        </Routes>
+      </Router>
     </React.Fragment>
   );
 }

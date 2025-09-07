@@ -1,5 +1,8 @@
 import axios from 'axios';
-import { Banner } from '../types/Banner';
+import { Banner, BannerStatus } from '../types/Banner';
+
+// Re-exportar tipos para facilitar importação
+export type { Banner, BannerStatus };
 
 const API_URL = 'http://localhost:4000/banners';
 
@@ -12,8 +15,8 @@ export interface BannerListResponse {
   totalPages: number;
 }
 
-export async function getBanners(): Promise<BannerListResponse> {
-  const response = await axios.get<BannerListResponse>(API_URL);
+export async function getBanners(params?: { status?: BannerStatus; include_scheduled?: boolean }): Promise<BannerListResponse> {
+  const response = await axios.get<BannerListResponse>(API_URL, { params });
   return response.data;
 }
 
