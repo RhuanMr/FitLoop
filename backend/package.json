@@ -10,7 +10,8 @@
     "build": "tsc",
     "check-schema": "ts-node src/migrations/checkAndFixSchema.ts",
     "fix-db": "ts-node src/migrations/fixDatabase.ts",
-    "test-db": "ts-node src/migrations/simpleFix.ts"
+    "test-db": "ts-node src/migrations/simpleFix.ts",
+    "migrate-crawler": "ts-node src/migrations/simpleCrawlerMigration.ts"
   },
   "keywords": [],
   "author": "",
@@ -18,17 +19,23 @@
   "type": "commonjs",
   "dependencies": {
     "@supabase/supabase-js": "^2.50.0",
+    "axios": "^1.11.0",
+    "cheerio": "^1.1.2",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "multer": "^2.0.1",
+    "node-cron": "^4.2.1",
+    "puppeteer": "^24.19.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@types/cheerio": "^0.22.35",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/multer": "^1.4.13",
     "@types/node": "^24.0.3",
+    "@types/node-cron": "^3.0.11",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.3"
   }

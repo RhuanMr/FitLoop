@@ -1,6 +1,9 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import bannerRoutes from './routes/bannerRoutes';
+import siteRoutes from './routes/siteRoutes';
+import suggestedPostRoutes from './routes/suggestedPostRoutes';
+import { SchedulerService } from './services/schedulerService';
 import cors from 'cors';
 
 dotenv.config();
@@ -23,7 +26,32 @@ app.use((req, res, next) => {
 });
 
 app.use('/banners', bannerRoutes);
+app.use('/sites', siteRoutes);
+app.use('/suggested-posts', suggestedPostRoutes);
 
-app.listen(PORT, () => {
+// Inicializar Scheduler Service
+const schedulerService = new SchedulerService();
+
+app.listen(PORT, async () => {
   console.log(`Servidor rodando na porta ${PORT}`);
+  
+  // Iniciar o scheduler após o servidor estar rodando
+  try {
+    await schedulerService.start();
+  } catch (error) {
+    console.error('Erro ao iniciar scheduler:', error);
+  }
+});
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('Recebido SIGINT. Parando servidor...');
+  await schedulerService.stop();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  console.log('Recebido SIGTERM. Parando servidor...');
+  await schedulerService.stop();
+  process.exit(0);
 });

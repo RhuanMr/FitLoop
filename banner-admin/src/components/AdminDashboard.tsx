@@ -5,6 +5,9 @@ import BannerForm from './BannerForm';
 import BannerCarousel from './BannerCarousel';
 import BannerList from './BannerList';
 import TVDisplay from './TVDisplay';
+import SiteManagement from './SiteManagement';
+import SuggestedPosts from './SuggestedPosts';
+import SimpleSiteForm from './SimpleSiteForm';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -60,11 +63,14 @@ const AdminDashboard: React.FC = () => {
       </Paper>
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={tabValue} onChange={handleTabChange} aria-label="admin tabs">
+        <Tabs value={tabValue} onChange={handleTabChange} aria-label="admin tabs" variant="scrollable" scrollButtons="auto">
           <Tab label="📝 Criar Banner" {...a11yProps(0)} />
           <Tab label="👁️ Preview Online" {...a11yProps(1)} />
           <Tab label="📋 Listar Banners" {...a11yProps(2)} />
           <Tab label="📺 TV Display" {...a11yProps(3)} />
+          <Tab label="🌐 Adicionar Site" {...a11yProps(4)} />
+          <Tab label="⚙️ Gerenciar Sites" {...a11yProps(5)} />
+          <Tab label="📰 Posts Sugeridos" {...a11yProps(6)} />
         </Tabs>
       </Box>
 
@@ -98,6 +104,18 @@ const AdminDashboard: React.FC = () => {
           </Button>
         </Box>
         <TVDisplay />
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={4}>
+        <SimpleSiteForm />
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={5}>
+        <SiteManagement />
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={6}>
+        <SuggestedPosts />
       </TabPanel>
     </Box>
   );
