@@ -22,7 +22,7 @@ export async function getBanners(params?: { status?: BannerStatus; include_sched
 
 // Reativa um banner expirado
 export async function reactivateBanner(id: number): Promise<Banner> {
-  const response = await axios.post<Banner>(`${API_URL}/${id}/reactivate`);
+  const response = await axios.post<Banner>(`${API_URL}/banners/${id}/reactivate`);
   return response.data;
 }
 
@@ -30,7 +30,7 @@ export async function reactivateBanner(id: number): Promise<Banner> {
 export async function createBanner(formData: FormData): Promise<Banner> {
   try {
     console.log('=== BANNER SERVICE DEBUG ===');
-    console.log('API URL:', `${API_URL}/upload`);
+    console.log('API URL:', `${API_URL}/banners/upload`);
     console.log('FormData entries:');
     Array.from(formData.entries()).forEach(([key, value]) => {
       console.log(`${key}:`, value);
@@ -54,5 +54,11 @@ export async function createBanner(formData: FormData): Promise<Banner> {
 
 // Deletar banner por id
 export async function deleteBanner(id: number): Promise<void> {
-  await axios.delete(`${API_URL}/${id}`);
+  console.log('=== DELETE BANNER DEBUG ===');
+  console.log('Deletando banner com ID:', id);
+  console.log('URL:', `${API_URL}/banners/${id}`);
+  
+  await axios.delete(`${API_URL}/banners/${id}`);
+  
+  console.log('Banner deletado com sucesso');
 }

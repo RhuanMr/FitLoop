@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Banner } from '../types/Banner';
 import { getBanners, deleteBanner, reactivateBanner } from '../services/bannerService';
+import axios from 'axios';
 import {
   Paper,
   Typography,
@@ -50,10 +51,20 @@ const BannerList: React.FC = () => {
 
   const handleConfirmDelete = async () => {
     if (deleteId !== null) {
-      await deleteBanner(deleteId);
-      setDeleteId(null);
-      setConfirmOpen(false);
-      fetchBanners();
+      try {
+        await deleteBanner(deleteId);
+        setDeleteId(null);
+        setConfirmOpen(false);
+        fetchBanners();
+      } catch (error: unknown) {
+        console.error('Erro ao deletar banner:', error);
+        // Se for um erro 404, podemos atualizar a lista mesmo assim
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+          setDeleteId(null);
+          setConfirmOpen(false);
+          fetchBanners();
+        }
+      }
     }
   };
 

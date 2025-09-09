@@ -248,47 +248,70 @@ export const getBanners = async (req: Request, res: Response) => {
       banners: filteredData,
       total,
       page: pageNum,
-      totalPages
     });
-    
   } catch (error) {
-    console.log('Erro geral no getBanners:', error);
-    return res.status(500).json({ error: `Erro interno: ${error instanceof Error ? error.message : 'Erro desconhecido'}` });
+    console.log('Erro ao buscar banners:', error);
+    return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }
 
-// DELETE /banners/:id
+// Função para deletar um banner
 export async function deleteBanner(req: Request, res: Response) {
-  const { id } = req.params;
-
-  // Busca o banner atual para remover a imagem do storage
-  const { data: banner, error: findError } = await supabase
-    .from('banners')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (findError || !banner) {
-    return res.status(404).json({ error: 'Banner não encontrado' });
-  }
-
-  // Remove imagem do storage, se existir
-  if (banner.url_image) {
-    const fileName = banner.url_image.split('/').pop();
-    if (fileName) {
-      await supabase.storage.from(process.env.BUCKET_NAME!).remove([fileName]);
+  try {
+    console.log('=== DELETE BANNER DEBUG ===');
+    const { id } = req.params;
+    console.log('Banner ID:', id);
+    
+    if (!id) {
+      console.log('ID não fornecido');
+      return res.status(400).json({ error: 'ID não fornecido' });
     }
+
+    // Verifica se o banner existe
+    const { data: banner, error: findError } = await supabase
+      .from('banners')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (findError || !banner) {
+      console.log('Banner não encontrado:', findError);
+      return res.status(404).json({ error: 'Banner não encontrado' });
+    }
+
+    console.log('Banner encontrado:', banner);
+
+    // Se tem imagem, remove do storage
+    if (banner.url_image) {
+      const fileName = banner.url_image.split('/').pop();
+      console.log('Removendo arquivo:', fileName);
+      
+      const { error: storageError } = await supabase.storage
+        .from(process.env.BUCKET_NAME!)
+        .remove([fileName]);
+        
+      if (storageError) {
+        console.log('Erro ao remover arquivo:', storageError);
+        // Não impede a deleção do registro se falhar em remover o arquivo
+      }
+    }
+
+    // Delete o banner
+    const { error: deleteError } = await supabase
+      .from('banners')
+      .delete()
+      .eq('id', id);
+
+    if (deleteError) {
+      console.log('Erro ao deletar banner:', deleteError);
+      return res.status(500).json({ error: `Erro ao deletar banner: ${deleteError.message}` });
+    }
+
+    console.log('Banner deletado com sucesso');
+    return res.status(204).send();
+  } catch (error) {
+    console.log('Erro ao deletar banner:', error);
+    return res.status(500).json({ error: 'Erro interno do servidor' });
   }
-
-  // Remove o registro do banco
-  const { error } = await supabase
-    .from('banners')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    return res.status(500).json({ error });
-  }
-
-  return res.json({ success: true });
 }
+
