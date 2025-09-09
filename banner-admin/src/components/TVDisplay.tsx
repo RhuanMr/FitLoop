@@ -23,7 +23,7 @@ const TVDisplay: React.FC = () => {
     if (banners.length > 0) {
       const interval = setInterval(() => {
         setCurrentIndex((prevIndex) => (prevIndex + 1) % banners.length);
-      }, 8000); // 8 segundos por banner
+      }, 60000); // 60 segundos (1 minuto) por banner
 
       return () => clearInterval(interval);
     }
