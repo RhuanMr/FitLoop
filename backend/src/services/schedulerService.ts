@@ -9,6 +9,20 @@ export class SchedulerService {
 
   constructor() {
     this.crawlerService = new CrawlerService();
+    // Criar tarefa para verificar banners expirados a cada 5 minutos
+    this.setupExpirationChecker();
+  }
+
+  private setupExpirationChecker() {
+    cron.schedule('*/5 * * * *', async () => {
+      console.log('🕒 Verificando banners expirados...');
+      try {
+        const { checkAndUpdateExpiredBanners } = await import('./bannerService');
+        await checkAndUpdateExpiredBanners();
+      } catch (error) {
+        console.error('❌ Erro ao verificar banners expirados:', error);
+      }
+    });
   }
 
   // Iniciar o agendador

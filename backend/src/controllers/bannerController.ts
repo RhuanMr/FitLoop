@@ -5,8 +5,10 @@ import { Banner, BannerStatus } from '../types/Banner';
 
 // Função auxiliar para validar status
 function isValidStatus(status: any): status is BannerStatus {
-  return ['active', 'inactive', 'archived'].includes(status);
+  return ['active', 'inactive', 'archived', 'expired'].includes(status);
 }
+
+
 
 export async function uploadBanner(req: Request, res: Response) {
   try {
@@ -162,7 +164,7 @@ export async function updateBanner(req: Request, res: Response) {
   return res.json({ success: true, data });
 }
 
-// GET /banners?page=1&limit=10&status=active&include_scheduled=true
+// GET /banners?page=1&limit=10&status=active&include_scheduled=true&include_expired=false
 export const getBanners = async (req: Request, res: Response) => {
   try {
     console.log('=== GET BANNERS DEBUG ===');
@@ -180,8 +182,18 @@ export const getBanners = async (req: Request, res: Response) => {
       .order('exhibition_order', { ascending: true })
       .range(offset, offset + limitNum - 1);
 
-    if (status && isValidStatus(status)) {
+    if (status === 'active') {
+      query = query
+        .eq('status', 'active')
+        .or(`scheduled_start.is.null,scheduled_start.lte.${now}`)
+        .or(`scheduled_end.is.null,scheduled_end.gt.${now}`);
+    } else if (status && isValidStatus(status)) {
       query = query.eq('status', status);
+    }
+
+    const { include_expired } = req.query;
+    if (include_expired !== 'true') {
+      query = query.neq('status', 'expired');
     }
 
     // Se include_scheduled for false, filtra apenas banners que estão no período de exibição

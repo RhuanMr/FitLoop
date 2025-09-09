@@ -219,11 +219,6 @@ const SuggestedPosts: React.FC = () => {
                   <Box>
                     {!post.is_approved && (
                       <>
-                        <Tooltip title="Aprovar">
-                          <IconButton size="small" onClick={() => handleApprove(post.id!)}>
-                            <ApproveIcon color="success" />
-                          </IconButton>
-                        </Tooltip>
                         <Tooltip title="Converter para Banner">
                           <IconButton 
                             size="small" 
@@ -235,18 +230,13 @@ const SuggestedPosts: React.FC = () => {
                             <ConvertIcon color="primary" />
                           </IconButton>
                         </Tooltip>
+                        <Tooltip title="Excluir">
+                          <IconButton size="small" onClick={() => handleDelete(post.id!)}>
+                            <DeleteIcon color="error" />
+                          </IconButton>
+                        </Tooltip>
                       </>
                     )}
-                    <Tooltip title="Rejeitar">
-                      <IconButton size="small" onClick={() => handleReject(post.id!)}>
-                        <RejectIcon color="error" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Excluir">
-                      <IconButton size="small" onClick={() => handleDelete(post.id!)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
                   </Box>
                 </Box>
               </CardContent>

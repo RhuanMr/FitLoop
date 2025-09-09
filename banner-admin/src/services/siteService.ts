@@ -47,10 +47,16 @@ export async function rejectPost(id: number): Promise<void> {
   await axios.put(`${API_URL}/suggested-posts/${id}/reject`);
 }
 
-export async function convertToBanner(id: number, exhibition_order?: number, status?: string): Promise<{ banner: any }> {
+export async function convertToBanner(id: number, exhibition_order?: number, status: string = 'active'): Promise<{ banner: any }> {
+  // Calcula a data de expiração (24 horas a partir de agora)
+  const now = new Date();
+  const scheduledEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
   const response = await axios.post<{ banner: any }>(`${API_URL}/suggested-posts/${id}/convert-to-banner`, {
     exhibition_order,
-    status
+    status,
+    scheduled_start: now.toISOString(),
+    scheduled_end: scheduledEnd.toISOString()
   });
   return response.data;
 }

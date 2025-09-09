@@ -1,4 +1,4 @@
-export type BannerStatus = 'active' | 'inactive' | 'archived';
+export type BannerStatus = 'active' | 'inactive' | 'archived' | 'expired';
 
 export interface Banner {
   id?: number;
@@ -10,4 +10,5 @@ export interface Banner {
   created_at?: string;
   scheduled_start?: string;
   scheduled_end?: string;
+  from_suggested_post?: boolean;
 }

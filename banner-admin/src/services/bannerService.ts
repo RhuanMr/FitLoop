@@ -4,7 +4,7 @@ import { Banner, BannerStatus } from '../types/Banner';
 // Re-exportar tipos para facilitar importação
 export type { Banner, BannerStatus };
 
-const API_URL = 'http://localhost:4000/banners';
+const API_URL = 'http://localhost:4000';
 
 // TODO: Pesquisar componentes para excluir e editar banners
 
@@ -15,8 +15,14 @@ export interface BannerListResponse {
   totalPages: number;
 }
 
-export async function getBanners(params?: { status?: BannerStatus; include_scheduled?: boolean }): Promise<BannerListResponse> {
-  const response = await axios.get<BannerListResponse>(API_URL, { params });
+export async function getBanners(params?: { status?: BannerStatus; include_scheduled?: boolean; include_expired?: boolean }): Promise<BannerListResponse> {
+  const response = await axios.get<BannerListResponse>(`${API_URL}/banners`, { params });
+  return response.data;
+}
+
+// Reativa um banner expirado
+export async function reactivateBanner(id: number): Promise<Banner> {
+  const response = await axios.post<Banner>(`${API_URL}/${id}/reactivate`);
   return response.data;
 }
 
@@ -30,7 +36,7 @@ export async function createBanner(formData: FormData): Promise<Banner> {
       console.log(`${key}:`, value);
     });
     
-    const response = await axios.post<Banner>(`${API_URL}/upload`, formData, {
+    const response = await axios.post<Banner>(`${API_URL}/banners/upload`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     

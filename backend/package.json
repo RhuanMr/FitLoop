@@ -11,7 +11,9 @@
     "check-schema": "ts-node src/migrations/checkAndFixSchema.ts",
     "fix-db": "ts-node src/migrations/fixDatabase.ts",
     "test-db": "ts-node src/migrations/simpleFix.ts",
-    "migrate-crawler": "ts-node src/migrations/simpleCrawlerMigration.ts"
+    "migrate-crawler": "ts-node src/migrations/simpleCrawlerMigration.ts",
+    "fix-banner-schema": "ts-node src/migrations/addSuggestedPostColumnFix.ts",
+    "fix-banner-schema-v2": "ts-node src/migrations/fixBannerSchema.ts"
   },
   "keywords": [],
   "author": "",

@@ -12,30 +12,54 @@ export const getSuggestedPosts = async (req: Request, res: Response) => {
     const limitNum = Number(limit) || 20;
     const offset = (pageNum - 1) * limitNum;
 
+    // Primeiro, buscar posts únicos por título
     let query = supabase
       .from('suggested_posts')
       .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limitNum - 1);
-
-    if (is_approved !== undefined) {
-      query = query.eq('is_approved', is_approved === 'true');
+      .order('created_at', { ascending: false });
+      
+    // Para posts aprovados, mostrar apenas os que foram convertidos em banners
+    if (is_approved === 'true') {
+      query = query
+        .eq('is_approved', true)
+        .not('converted_to_banner_at', 'is', null);
+    } else if (is_approved === 'false') {
+      query = query
+        .eq('is_approved', false);
     }
 
-    const { data, error, count } = await query;
-
-    if (error) {
-      console.log('Erro ao buscar posts sugeridos:', error);
-      return res.status(500).json({ error: `Erro ao buscar posts: ${error.message}` });
+    const { data: allData, error: allDataError } = await query;
+    
+    if (allDataError) {
+      console.log('Erro ao buscar posts sugeridos:', allDataError);
+      return res.status(500).json({ error: `Erro ao buscar posts: ${allDataError.message}` });
     }
 
-    const total = count || 0;
-    const totalPages = Math.ceil(total / limitNum);
+    // Filtrar duplicatas por título, mantendo apenas o mais recente
+    const uniquePosts = allData?.reduce<SuggestedPost[]>((acc, current) => {
+      const x = acc.find(item => item.title === current.title);
+      if (!x) {
+        return acc.concat([current]);
+      } else {
+        // Se já existe, atualiza apenas se o atual for mais recente
+        if (new Date(current.created_at!) > new Date(x.created_at!)) {
+          return acc.map(item => item.title === current.title ? current : item);
+        }
+      }
+      return acc;
+    }, []);
 
-    console.log('Posts sugeridos encontrados:', data?.length || 0);
+    // Aplicar paginação nos posts únicos
+    const startIndex = offset;
+    const endIndex = startIndex + limitNum;
+    const paginatedPosts = uniquePosts?.slice(startIndex, endIndex) || [];
+    const totalUnique = uniquePosts?.length || 0;
+    const totalPages = Math.ceil(totalUnique / limitNum);
+
+    console.log('Posts sugeridos únicos encontrados:', totalUnique);
     return res.json({
-      posts: data || [],
-      total,
+      posts: paginatedPosts,
+      total: totalUnique,
       page: pageNum,
       totalPages
     });
@@ -133,15 +157,19 @@ export const convertToBanner = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Post sugerido não encontrado' });
     }
 
-    // Criar banner baseado no post sugerido
+    // Criar banner baseado no post sugerido com agendamento automático de 24 horas
+    const now = new Date();
+    const scheduledEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 horas a partir de agora
+
     const bannerData = {
       title: post.title,
       url_image: post.image_url,
       exhibition_order: Number(exhibition_order),
       description: `Fonte: ${post.source_site}`,
       status: status,
-      scheduled_start: null,
-      scheduled_end: null
+      scheduled_start: now.toISOString(),
+      scheduled_end: scheduledEnd.toISOString(),
+      from_suggested_post: true // Campo adicional para identificar que veio de um post sugerido
     };
 
     const { data: banner, error: bannerError } = await supabase
@@ -154,10 +182,13 @@ export const convertToBanner = async (req: Request, res: Response) => {
       return res.status(500).json({ error: `Erro ao criar banner: ${bannerError.message}` });
     }
 
-    // Marcar post como aprovado
+    // Marcar post como aprovado e convertido
     await supabase
       .from('suggested_posts')
-      .update({ is_approved: true })
+      .update({ 
+        is_approved: true,
+        converted_to_banner_at: new Date().toISOString()
+      })
       .eq('id', id);
 
     console.log('Post convertido para banner com sucesso');

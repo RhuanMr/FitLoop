@@ -34,7 +34,7 @@ const TVDisplay: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      const data = await getBanners({ status: 'active', include_scheduled: false });
+      const data = await getBanners({ status: 'active', include_scheduled: true });
       setBanners(data.banners || []);
       
       // Resetar índice se necessário

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Banner } from '../types/Banner';
-import { getBanners, deleteBanner } from '../services/bannerService';
+import { getBanners, deleteBanner, reactivateBanner } from '../services/bannerService';
 import {
   Paper,
   Typography,
@@ -20,16 +20,21 @@ import {
   Button,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 const BannerList: React.FC = () => {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [showExpired, setShowExpired] = useState(false);
 
   const fetchBanners = () => {
     setLoading(true);
-    getBanners({ include_scheduled: true }) // Buscar todos os banners, incluindo agendados
+    getBanners({ 
+      include_scheduled: true,
+      include_expired: showExpired 
+    })
       .then((data) => setBanners(data.banners ?? []))
       .finally(() => setLoading(false));
   };
@@ -65,23 +70,56 @@ const BannerList: React.FC = () => {
     );
   }
 
+  const handleReactivate = async (id: number) => {
+    try {
+      await reactivateBanner(id);
+      fetchBanners();
+    } catch (error) {
+      console.error('Erro ao reativar banner:', error);
+    }
+  };
+
   return (
     <Paper elevation={3} sx={{ p: 4, maxWidth: 600, mx: 'auto', mt: 5 }}>
-      <Typography variant="h5" mb={2}>
-        Lista de Banners
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h5">
+          Lista de Banners
+        </Typography>
+        <Button
+          variant={showExpired ? "contained" : "outlined"}
+          onClick={() => {
+            setShowExpired(!showExpired);
+            fetchBanners();
+          }}
+        >
+          {showExpired ? "Ocultar Expirados" : "Mostrar Expirados"}
+        </Button>
+      </Box>
       <List>
         {banners.map((banner) => (
           <ListItem key={banner.id} alignItems="flex-start"
             secondaryAction={
-              <IconButton
-                edge="end"
-                aria-label="delete"
-                color="error"
-                onClick={() => handleDeleteClick(banner.id!)}
-              >
-                <DeleteIcon />
-              </IconButton>
+              <Box>
+                {banner.status === 'expired' && (
+                  <IconButton
+                    edge="end"
+                    aria-label="reactivate"
+                    color="primary"
+                    onClick={() => handleReactivate(banner.id!)}
+                    sx={{ mr: 1 }}
+                  >
+                    <RefreshIcon />
+                  </IconButton>
+                )}
+                <IconButton
+                  edge="end"
+                  aria-label="delete"
+                  color="error"
+                  onClick={() => handleDeleteClick(banner.id!)}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Box>
             }
           >
             <ListItemAvatar>
@@ -96,22 +134,27 @@ const BannerList: React.FC = () => {
               primary={banner.title}
               secondary={
                 <Box>
-                  <Typography variant="body2" component="span">
+                  <Typography component="span" variant="body2" color="text.primary">
                     Ordem: {banner.exhibition_order} | Status: {banner.status}
                   </Typography>
                   {banner.description && (
-                    <Typography variant="body2" color="text.secondary" display="block">
+                    <Typography variant="body2" color="text.secondary" sx={{ display: 'block' }}>
                       {banner.description}
                     </Typography>
                   )}
                   {banner.scheduled_start && (
-                    <Typography variant="caption" color="text.secondary" display="block">
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                       Início: {new Date(banner.scheduled_start).toLocaleString()}
                     </Typography>
                   )}
                   {banner.scheduled_end && (
-                    <Typography variant="caption" color="text.secondary" display="block">
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                       Fim: {new Date(banner.scheduled_end).toLocaleString()}
+                    </Typography>
+                  )}
+                  {banner.from_suggested_post && (
+                    <Typography component="span" variant="body2" color="info.main" sx={{ display: 'block' }}>
+                      Post sugerido
                     </Typography>
                   )}
                 </Box>

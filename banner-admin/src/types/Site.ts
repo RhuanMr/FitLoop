@@ -20,4 +20,5 @@ export interface SuggestedPost {
   source_site: string;
   is_approved: boolean;
   created_at?: string;
+  converted_to_banner_at?: string;
 }
