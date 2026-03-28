@@ -152,7 +152,7 @@ const TVDisplay: React.FC = () => {
           }}
         >
           <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-            🏋️ FitLoop - TV Display
+            FitLoop - TV Display
           </Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <IconButton

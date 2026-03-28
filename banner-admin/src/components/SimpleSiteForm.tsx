@@ -109,7 +109,7 @@ const SimpleSiteForm: React.FC = () => {
   return (
     <Box>
       <Typography variant="h5" gutterBottom>
-        🌐 Adicionar Site para Monitoramento
+        Adicionar Site para Monitoramento
       </Typography>
       
       <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
@@ -171,7 +171,7 @@ const SimpleSiteForm: React.FC = () => {
       {/* Formulário Manual */}
       <Paper sx={{ p: 3 }}>
         <Typography variant="h6" gutterBottom>
-          ✏️ Adicionar Site Personalizado
+          Adicionar Site Personalizado
         </Typography>
         
         <form onSubmit={formik.handleSubmit}>

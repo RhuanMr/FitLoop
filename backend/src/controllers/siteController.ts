@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import supabase from '../services/supabaseService';
 import { CrawlerService } from '../services/crawlerService';
-import { Site } from '../types/Site';
+import { Site, SuggestedPost } from '../types/Site';
 
 const crawlerService = new CrawlerService();
 
@@ -191,5 +191,73 @@ export const getSelectorsForUrl = async (req: Request, res: Response) => {
   } catch (error) {
     console.log('Erro geral no getSelectorsForUrl:', error);
     return res.status(500).json({ error: `Erro interno: ${error instanceof Error ? error.message : 'Erro desconhecido'}` });
+  }
+};
+
+// POST /sites/:id/crawl
+export const crawlSite = async (req: Request, res: Response) => {
+  try {
+    console.log('=== CRAWL SITE DEBUG ===');
+    const { id } = req.params;
+
+    const { data: site, error: siteError } = await supabase
+      .from('sites')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (siteError || !site) {
+      return res.status(404).json({ error: 'Site não encontrado' });
+    }
+
+    console.log(`Iniciando crawler para: ${site.name}`);
+
+    // Executar crawler
+    const posts = await crawlerService.crawlSite(site);
+
+    if (posts.length > 0) {
+      // Salvar posts sugeridos no banco
+      const { error: insertError } = await supabase
+        .from('suggested_posts')
+        .insert(posts);
+
+      if (insertError) {
+        console.error('Erro ao salvar posts sugeridos:', insertError);
+        return res.status(500).json({ 
+          success: false, 
+          posts: [], 
+          error: `Erro ao salvar posts: ${insertError.message}` 
+        });
+      }
+
+      // Atualizar timestamp do último crawl
+      await supabase
+        .from('sites')
+        .update({ last_crawled: new Date().toISOString() })
+        .eq('id', id);
+
+      console.log(`Crawler concluído para ${site.name}: ${posts.length} posts criados`);
+      
+      return res.json({
+        success: true,
+        posts: posts,
+        message: `${posts.length} posts sugeridos criados com sucesso`
+      });
+    } else {
+      console.log(`Nenhum post encontrado para ${site.name}`);
+      return res.json({
+        success: true,
+        posts: [],
+        message: 'Nenhum post encontrado'
+      });
+    }
+    
+  } catch (error) {
+    console.log('Erro geral no crawlSite:', error);
+    return res.status(500).json({ 
+      success: false, 
+      posts: [], 
+      error: error instanceof Error ? error.message : 'Erro desconhecido' 
+    });
   }
 };

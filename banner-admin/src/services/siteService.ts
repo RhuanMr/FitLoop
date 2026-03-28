@@ -28,6 +28,11 @@ export async function testSite(id: number): Promise<{ success: boolean; posts: S
   return response.data;
 }
 
+export async function crawlSite(id: number): Promise<{ success: boolean; posts: SuggestedPost[]; message?: string; error?: string }> {
+  const response = await axios.post<{ success: boolean; posts: SuggestedPost[]; message?: string; error?: string }>(`${API_URL}/sites/${id}/crawl`);
+  return response.data;
+}
+
 export async function getSelectorsForUrl(url: string): Promise<{ selectors: { title: string; image: string; link?: string } }> {
   const response = await axios.get<{ selectors: { title: string; image: string; link?: string } }>(`${API_URL}/sites/selectors/${encodeURIComponent(url)}`);
   return response.data;

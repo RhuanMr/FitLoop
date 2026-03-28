@@ -1,5 +1,5 @@
 import express from 'express';
-import { getSites, createSite, updateSite, deleteSite, testSite, getSelectorsForUrl } from '../controllers/siteController';
+import { getSites, createSite, updateSite, deleteSite, testSite, getSelectorsForUrl, crawlSite } from '../controllers/siteController';
 
 const router = express.Router();
 
@@ -31,6 +31,11 @@ router.post('/:id/test', (req, res, next) => {
 // GET /sites/selectors/:url
 router.get('/selectors/:url', (req, res, next) => {
   getSelectorsForUrl(req, res).catch(next);
+});
+
+// POST /sites/:id/crawl
+router.post('/:id/crawl', (req, res, next) => {
+  crawlSite(req, res).catch(next);
 });
 
 export default router;

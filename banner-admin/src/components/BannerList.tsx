@@ -144,32 +144,33 @@ const BannerList: React.FC = () => {
             <ListItemText
               primary={banner.title}
               secondary={
-                <Box>
+                <Box component="div">
                   <Typography component="span" variant="body2" color="text.primary">
                     Ordem: {banner.exhibition_order} | Status: {banner.status}
                   </Typography>
                   {banner.description && (
-                    <Typography variant="body2" color="text.secondary" sx={{ display: 'block' }}>
+                    <Typography component="div" variant="body2" color="text.secondary" sx={{ display: 'block' }}>
                       {banner.description}
                     </Typography>
                   )}
                   {banner.scheduled_start && (
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                    <Typography component="div" variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                       Início: {new Date(banner.scheduled_start).toLocaleString()}
                     </Typography>
                   )}
                   {banner.scheduled_end && (
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                    <Typography component="div" variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                       Fim: {new Date(banner.scheduled_end).toLocaleString()}
                     </Typography>
                   )}
                   {banner.from_suggested_post && (
-                    <Typography component="span" variant="body2" color="info.main" sx={{ display: 'block' }}>
+                    <Typography component="div" variant="body2" color="info.main" sx={{ display: 'block' }}>
                       Post sugerido
                     </Typography>
                   )}
                 </Box>
               }
+              secondaryTypographyProps={{ component: 'div' }}
             />
           </ListItem>
         ))}

@@ -33,7 +33,7 @@ import {
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Site } from '../types/Site';
-import { getSites, createSite, updateSite, deleteSite, testSite, getSelectorsForUrl } from '../services/siteService';
+import { getSites, createSite, updateSite, deleteSite, testSite, getSelectorsForUrl, crawlSite } from '../services/siteService';
 
 const validationSchema = Yup.object({
   name: Yup.string().required('Nome é obrigatório'),
@@ -127,13 +127,38 @@ const SiteManagement: React.FC = () => {
     try {
       setTestingSite(site.id!);
       setTestResult(null);
-      const result = await testSite(site.id!);
-      setTestResult(result);
+      
+      // Primeiro testa o site para verificar se os seletores estão funcionando
+      const testResult = await testSite(site.id!);
+      
+      if (!testResult.success) {
+        setTestResult(testResult);
+        return;
+      }
+      
+      // Se o teste foi bem-sucedido, executa o crawler e cria os posts sugeridos
+      const crawlResult = await crawlSite(site.id!);
+      
+      if (crawlResult.success) {
+        setTestResult({
+          success: true,
+          posts: crawlResult.posts,
+          error: undefined
+        });
+        // Atualizar a lista de sites para mostrar o novo last_crawled
+        await fetchSites();
+      } else {
+        setTestResult({
+          success: false,
+          posts: [],
+          error: crawlResult.error || 'Erro ao executar crawler'
+        });
+      }
     } catch (error) {
       setTestResult({
         success: false,
         posts: [],
-        error: 'Erro ao testar site'
+        error: error instanceof Error ? error.message : 'Erro ao testar e fazer crawler do site'
       });
     } finally {
       setTestingSite(null);
@@ -217,7 +242,7 @@ const SiteManagement: React.FC = () => {
                   </TableCell>
                   <TableCell>{formatLastCrawled(site.last_crawled)}</TableCell>
                   <TableCell>
-                    <Tooltip title="Testar Site">
+                    <Tooltip title="Executar Crawler e Criar Posts Sugeridos">
                       <IconButton
                         size="small"
                         onClick={() => handleTest(site)}
@@ -251,8 +276,8 @@ const SiteManagement: React.FC = () => {
           onClose={() => setTestResult(null)}
         >
           {testResult.success 
-            ? `Teste bem-sucedido! Encontrados ${testResult.posts.length} posts.`
-            : `Erro no teste: ${testResult.error}`
+            ? `Crawler executado com sucesso! ${testResult.posts.length} posts sugeridos criados.`
+            : `Erro: ${testResult.error}`
           }
         </Alert>
       )}
