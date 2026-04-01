@@ -19,9 +19,12 @@ import {
   DialogContentText,
   DialogActions,
   Button,
+  Chip,
+  Container,
+  Card,
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import RefreshIcon from '@mui/icons-material/Refresh';
+import { Delete as DeleteIcon, Refresh as RefreshIcon, Restore as RestoreIcon } from '@mui/icons-material';
+import { formatDate } from '../utils/formatting';
 
 const BannerList: React.FC = () => {
   const [banners, setBanners] = useState<Banner[]>([]);
@@ -58,7 +61,6 @@ const BannerList: React.FC = () => {
         fetchBanners();
       } catch (error: unknown) {
         console.error('Erro ao deletar banner:', error);
-        // Se for um erro 404, podemos atualizar a lista mesmo assim
         if (axios.isAxiosError(error) && error.response?.status === 404) {
           setDeleteId(null);
           setConfirmOpen(false);
@@ -90,95 +92,147 @@ const BannerList: React.FC = () => {
     }
   };
 
+  const statusColor = (status: string): 'default' | 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success' => {
+    switch (status) {
+      case 'active': return 'success';
+      case 'inactive': return 'default';
+      case 'archived': return 'error';
+      case 'expired': return 'warning';
+      default: return 'default';
+    }
+  };
+
+  const statusLabel = (status: string): string => {
+    const labels: Record<string, string> = {
+      'active': 'Ativo',
+      'inactive': 'Inativo',
+      'archived': 'Arquivado',
+      'expired': 'Expirado'
+    };
+    return labels[status] || status;
+  };
+
   return (
-    <Paper elevation={3} sx={{ p: 4, maxWidth: 600, mx: 'auto', mt: 5 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5">
-          Lista de Banners
-        </Typography>
-        <Button
-          variant={showExpired ? "contained" : "outlined"}
-          onClick={() => {
-            setShowExpired(!showExpired);
-            fetchBanners();
-          }}
-        >
-          {showExpired ? "Ocultar Expirados" : "Mostrar Expirados"}
-        </Button>
-      </Box>
-      <List>
-        {banners.map((banner) => (
-          <ListItem key={banner.id} alignItems="flex-start"
-            secondaryAction={
-              <Box>
-                {banner.status === 'expired' && (
-                  <IconButton
-                    edge="end"
-                    aria-label="reactivate"
-                    color="primary"
-                    onClick={() => handleReactivate(banner.id!)}
-                    sx={{ mr: 1 }}
-                  >
-                    <RefreshIcon />
-                  </IconButton>
-                )}
-                <IconButton
-                  edge="end"
-                  aria-label="delete"
-                  color="error"
-                  onClick={() => handleDeleteClick(banner.id!)}
+    <Container maxWidth="md" sx={{ py: 2 }}>
+      <Card elevation={2}>
+        <Box sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              Lista de Banners
+            </Typography>
+            <Button
+              variant={showExpired ? "contained" : "outlined"}
+              onClick={() => {
+                setShowExpired(!showExpired);
+                fetchBanners();
+              }}
+              size="small"
+            >
+              {showExpired ? "Ocultar Expirados" : "Mostrar Expirados"}
+            </Button>
+          </Box>
+
+          {banners.length === 0 ? (
+            <Typography color="text.secondary" align="center" sx={{ py: 4 }}>
+              Nenhum banner cadastrado.
+            </Typography>
+          ) : (
+            <List sx={{ width: '100%' }}>
+              {banners.map((banner) => (
+                <ListItem 
+                  key={banner.id} 
+                  alignItems="flex-start"
+                  sx={{
+                    mb: 1.5,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: 1,
+                    '&:hover': { backgroundColor: 'action.hover' }
+                  }}
+                  secondaryAction={
+                    <Box>
+                      {banner.status === 'expired' && (
+                        <IconButton
+                          edge="end"
+                          aria-label="reactivate"
+                          color="primary"
+                          onClick={() => handleReactivate(banner.id!)}
+                          sx={{ mr: 1 }}
+                          title="Reativar"
+                        >
+                          <RestoreIcon />
+                        </IconButton>
+                      )}
+                      <IconButton
+                        edge="end"
+                        aria-label="delete"
+                        color="error"
+                        onClick={() => handleDeleteClick(banner.id!)}
+                        title="Excluir"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Box>
+                  }
                 >
-                  <DeleteIcon />
-                </IconButton>
-              </Box>
-            }
-          >
-            <ListItemAvatar>
-              <Avatar
-                variant="rounded"
-                src={banner.url_image}
-                alt={banner.title}
-                sx={{ width: 56, height: 56, mr: 2 }}
-              />
-            </ListItemAvatar>
-            <ListItemText
-              primary={banner.title}
-              secondary={
-                <Box>
-                  <Typography component="span" variant="body2" color="text.primary">
-                    Ordem: {banner.exhibition_order} | Status: {banner.status}
-                  </Typography>
-                  {banner.description && (
-                    <Typography variant="body2" color="text.secondary" sx={{ display: 'block' }}>
-                      {banner.description}
-                    </Typography>
-                  )}
-                  {banner.scheduled_start && (
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                      Início: {new Date(banner.scheduled_start).toLocaleString()}
-                    </Typography>
-                  )}
-                  {banner.scheduled_end && (
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                      Fim: {new Date(banner.scheduled_end).toLocaleString()}
-                    </Typography>
-                  )}
-                  {banner.from_suggested_post && (
-                    <Typography component="span" variant="body2" color="info.main" sx={{ display: 'block' }}>
-                      Post sugerido
-                    </Typography>
-                  )}
-                </Box>
-              }
-            />
-          </ListItem>
-        ))}
-      </List>
-      {banners.length === 0 && (
-        <Typography color="text.secondary" align="center">
-          Nenhum banner cadastrado.
-        </Typography>
-      )}
+                  <ListItemAvatar>
+                    <Avatar
+                      variant="rounded"
+                      src={banner.url_image}
+                      alt={banner.title}
+                      sx={{ width: 80, height: 80, mr: 2 }}
+                    />
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                          {banner.title}
+                        </Typography>
+                        <Chip 
+                          label={statusLabel(banner.status)}
+                          color={statusColor(banner.status)}
+                          size="small"
+                        />
+                      </Box>
+                    }
+                    secondary={
+                      <Box sx={{ mt: 1 }}>
+                        <Typography component="span" variant="body2" color="text.primary">
+                          Ordem: {banner.exhibition_order}
+                        </Typography>
+                        {banner.description && (
+                          <Typography variant="body2" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                            {banner.description}
+                          </Typography>
+                        )}
+                        {banner.scheduled_start && (
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                            Início: {formatDate(banner.scheduled_start)}
+                          </Typography>
+                        )}
+                        {banner.scheduled_end && (
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                            Fim: {formatDate(banner.scheduled_end)}
+                          </Typography>
+                        )}
+                        {banner.from_suggested_post && (
+                          <Chip 
+                            label="Post Sugerido" 
+                            variant="outlined"
+                            size="small"
+                            sx={{ mt: 1 }}
+                          />
+                        )}
+                      </Box>
+                    }
+                  />
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </Box>
+      </Card>
 
       <Dialog open={confirmOpen} onClose={handleCancelDelete}>
         <DialogTitle>Confirmar exclusão</DialogTitle>
@@ -196,7 +250,7 @@ const BannerList: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </Paper>
+    </Container>
   );
 };
 

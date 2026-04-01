@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Paper, CircularProgress, Alert } from '@mui/material';
+import { Box, Typography, Paper, CircularProgress, Alert, Container, Card, CardContent } from '@mui/material';
 import { getBanners, Banner } from '../services/bannerService';
+import { formatDate } from '../utils/formatting';
 
 const BannerCarousel: React.FC = () => {
   const [banners, setBanners] = useState<Banner[]>([]);
@@ -11,7 +12,6 @@ const BannerCarousel: React.FC = () => {
   useEffect(() => {
     fetchBanners();
     
-    // Atualizar banners a cada 30 segundos
     const interval = setInterval(fetchBanners, 30000);
     
     return () => clearInterval(interval);
@@ -25,7 +25,6 @@ const BannerCarousel: React.FC = () => {
       const data = await getBanners({ status: 'active', include_scheduled: false });
       setBanners(data.banners || []);
       
-      // Resetar índice se necessário
       if (currentIndex >= (data.banners || []).length) {
         setCurrentIndex(0);
       }
@@ -41,7 +40,7 @@ const BannerCarousel: React.FC = () => {
     if (banners.length > 0) {
       const interval = setInterval(() => {
         setCurrentIndex((prevIndex) => (prevIndex + 1) % banners.length);
-      }, 5000); // Trocar banner a cada 5 segundos
+      }, 5000);
 
       return () => clearInterval(interval);
     }
@@ -49,7 +48,7 @@ const BannerCarousel: React.FC = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="300px">
         <CircularProgress />
         <Typography variant="body1" sx={{ ml: 2 }}>
           Carregando banners...
@@ -68,36 +67,36 @@ const BannerCarousel: React.FC = () => {
 
   if (banners.length === 0) {
     return (
-      <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
-        <Typography variant="h6" color="text.secondary">
-          Nenhum banner ativo encontrado
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          Crie um banner para vê-lo aqui
-        </Typography>
-      </Paper>
+      <Card elevation={0} variant="outlined">
+        <CardContent sx={{ textAlign: 'center', py: 4 }}>
+          <Typography variant="h6" color="text.secondary">
+            Nenhum banner ativo encontrado
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Crie um banner para vê-lo aqui
+          </Typography>
+        </CardContent>
+      </Card>
     );
   }
 
   const currentBanner = banners[currentIndex];
 
   return (
-    <Box>
-      <Typography variant="h5" gutterBottom>
+    <Container maxWidth="md" sx={{ py: 2 }}>
+      <Typography variant="h5" gutterBottom sx={{ fontWeight: 700 }}>
         Preview dos Banners Online
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Esta é a visualização dos banners como aparecem no app FitLoop
+        Visualização dos banners como aparecem no app FitLoop
       </Typography>
 
-      <Paper elevation={3} sx={{ p: 3, mb: 2 }}>
+      <Card elevation={2} sx={{ mb: 3, overflow: 'hidden' }}>
         <Box
           sx={{
             position: 'relative',
             width: '100%',
             height: '400px',
-            borderRadius: 2,
-            overflow: 'hidden',
             backgroundColor: '#f5f5f5',
             display: 'flex',
             flexDirection: 'column',
@@ -112,7 +111,6 @@ const BannerCarousel: React.FC = () => {
               width: '100%',
               height: '70%',
               objectFit: 'cover',
-              borderRadius: '8px',
             }}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -120,8 +118,8 @@ const BannerCarousel: React.FC = () => {
             }}
           />
           
-          <Box sx={{ p: 2, textAlign: 'center', width: '100%' }}>
-            <Typography variant="h6" gutterBottom>
+          <Box sx={{ p: 2, textAlign: 'center', width: '100%', backgroundColor: '#fff' }}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
               {currentBanner.title}
             </Typography>
             {currentBanner.description && (
@@ -133,7 +131,7 @@ const BannerCarousel: React.FC = () => {
         </Box>
 
         {/* Indicadores */}
-        <Box display="flex" justifyContent="center" gap={1} mt={2}>
+        <Box display="flex" justifyContent="center" gap={1} p={2}>
           {banners.map((_, index) => (
             <Box
               key={index}
@@ -151,43 +149,42 @@ const BannerCarousel: React.FC = () => {
         </Box>
 
         {/* Informações do banner atual */}
-        <Box mt={2} p={2} bgcolor="grey.50" borderRadius={1}>
-          <Typography variant="body2" color="text.secondary">
-            Banner {currentIndex + 1} de {banners.length}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Ordem de exibição: {currentBanner.exhibition_order}
+        <Box sx={{ p: 2, bgcolor: 'grey.50', borderTop: '1px solid', borderColor: 'divider' }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            Banner {currentIndex + 1} de {banners.length} | Ordem de exibição: {currentBanner.exhibition_order}
           </Typography>
           {currentBanner.scheduled_start && (
             <Typography variant="body2" color="text.secondary">
-              Início: {new Date(currentBanner.scheduled_start).toLocaleString()}
+              Início: {formatDate(currentBanner.scheduled_start)}
             </Typography>
           )}
           {currentBanner.scheduled_end && (
             <Typography variant="body2" color="text.secondary">
-              Fim: {new Date(currentBanner.scheduled_end).toLocaleString()}
+              Fim: {formatDate(currentBanner.scheduled_end)}
             </Typography>
           )}
         </Box>
-      </Paper>
+      </Card>
 
       {/* Lista de todos os banners */}
-      <Paper elevation={1} sx={{ p: 2 }}>
-        <Typography variant="h6" gutterBottom>
+      <Card elevation={1} sx={{ p: 2 }}>
+        <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
           Todos os Banners Ativos ({banners.length})
         </Typography>
         <Box display="flex" flexWrap="wrap" gap={2}>
           {banners.map((banner, index) => (
             <Paper
               key={banner.id}
-              elevation={1}
+              elevation={0}
+              variant="outlined"
               sx={{
-                p: 2,
-                minWidth: '200px',
+                p: 1.5,
+                minWidth: '150px',
                 cursor: 'pointer',
-                border: index === currentIndex ? 2 : 1,
+                border: index === currentIndex ? 3 : 1,
                 borderColor: index === currentIndex ? 'primary.main' : 'grey.300',
-                transition: 'border-color 0.3s',
+                transition: 'all 0.3s',
+                '&:hover': { borderColor: 'primary.main' }
               }}
               onClick={() => setCurrentIndex(index)}
             >
@@ -199,23 +196,17 @@ const BannerCarousel: React.FC = () => {
                   height: '100px',
                   objectFit: 'cover',
                   borderRadius: '4px',
-                }}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
+                  marginBottom: '8px'
                 }}
               />
-              <Typography variant="subtitle2" sx={{ mt: 1 }}>
+              <Typography variant="caption" sx={{ display: 'block', fontWeight: 600 }}>
                 {banner.title}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Ordem: {banner.exhibition_order}
               </Typography>
             </Paper>
           ))}
         </Box>
-      </Paper>
-    </Box>
+      </Card>
+    </Container>
   );
 };
 

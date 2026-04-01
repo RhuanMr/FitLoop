@@ -22,18 +22,20 @@ import {
   CircularProgress,
   Chip,
   Tooltip,
+  Container,
+  Card,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   PlayArrow as TestIcon,
-  Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Site } from '../types/Site';
 import { getSites, createSite, updateSite, deleteSite, testSite, getSelectorsForUrl } from '../services/siteService';
+import { formatLastCrawled } from '../utils/formatting';
 
 const validationSchema = Yup.object({
   name: Yup.string().required('Nome é obrigatório'),
@@ -155,11 +157,6 @@ const SiteManagement: React.FC = () => {
     }
   };
 
-  const formatLastCrawled = (dateString?: string) => {
-    if (!dateString) return 'Nunca';
-    return new Date(dateString).toLocaleString();
-  };
-
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
@@ -169,9 +166,9 @@ const SiteManagement: React.FC = () => {
   }
 
   return (
-    <Box>
+    <Container maxWidth="lg" sx={{ py: 2 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h5">Gerenciamento de Sites</Typography>
+        <Typography variant="h5" sx={{ fontWeight: 700 }}>Gerenciamento de Sites</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -185,23 +182,23 @@ const SiteManagement: React.FC = () => {
         </Button>
       </Box>
 
-      <Paper>
+      <Card elevation={2}>
         <TableContainer>
           <Table>
             <TableHead>
-              <TableRow>
-                <TableCell>Nome</TableCell>
-                <TableCell>URL</TableCell>
-                <TableCell>Intervalo</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Último Crawl</TableCell>
-                <TableCell>Ações</TableCell>
+              <TableRow sx={{ backgroundColor: 'grey.100' }}>
+                <TableCell sx={{ fontWeight: 700 }}>Nome</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>URL</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Intervalo</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Último Crawl</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 700 }}>Ações</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {sites.map((site) => (
-                <TableRow key={site.id}>
-                  <TableCell>{site.name}</TableCell>
+                <TableRow key={site.id} sx={{ '&:hover': { backgroundColor: 'action.hover' } }}>
+                  <TableCell sx={{ fontWeight: 500 }}>{site.name}</TableCell>
                   <TableCell>
                     <Typography variant="body2" color="primary" sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {site.url}
@@ -216,7 +213,7 @@ const SiteManagement: React.FC = () => {
                     />
                   </TableCell>
                   <TableCell>{formatLastCrawled(site.last_crawled)}</TableCell>
-                  <TableCell>
+                  <TableCell align="right">
                     <Tooltip title="Testar Site">
                       <IconButton
                         size="small"
@@ -242,7 +239,7 @@ const SiteManagement: React.FC = () => {
             </TableBody>
           </Table>
         </TableContainer>
-      </Paper>
+      </Card>
 
       {testResult && (
         <Alert 
@@ -258,12 +255,12 @@ const SiteManagement: React.FC = () => {
       )}
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>
           {editingSite ? 'Editar Site' : 'Adicionar Site'}
         </DialogTitle>
         <form onSubmit={formik.handleSubmit}>
           <DialogContent>
-            <Box display="flex" flexDirection="column" gap={2} pt={1}>
+            <Box display="flex" flexDirection="column" gap={2.5} pt={2}>
               <TextField
                 label="Nome do Site"
                 name="name"
@@ -340,7 +337,7 @@ const SiteManagement: React.FC = () => {
               />
             </Box>
           </DialogContent>
-          <DialogActions>
+          <DialogActions sx={{ p: 2 }}>
             <Button onClick={() => setDialogOpen(false)}>Cancelar</Button>
             <Button type="submit" variant="contained">
               {editingSite ? 'Atualizar' : 'Criar'}
@@ -348,7 +345,7 @@ const SiteManagement: React.FC = () => {
           </DialogActions>
         </form>
       </Dialog>
-    </Box>
+    </Container>
   );
 };
 

@@ -11,8 +11,10 @@ import {
   CircularProgress,
   Card,
   CardContent,
+  Container,
+  Grid,
 } from '@mui/material';
-import { Add as AddIcon, Sports as SportsIcon } from '@mui/icons-material';
+import { Add as AddIcon } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Site } from '../types/Site';
@@ -46,7 +48,6 @@ const SimpleSiteForm: React.FC = () => {
         setError(null);
         setSuccess(false);
 
-        // Obter seletores automaticamente
         const { selectors } = await getSelectorsForUrl(values.url);
 
         const siteData: Omit<Site, 'id' | 'created_at'> = {
@@ -64,7 +65,6 @@ const SimpleSiteForm: React.FC = () => {
         setSuccess(true);
         resetForm();
         
-        // Limpar mensagem de sucesso após 3 segundos
         setTimeout(() => setSuccess(false), 3000);
         
       } catch (error) {
@@ -81,19 +81,16 @@ const SimpleSiteForm: React.FC = () => {
       name: 'ESPN Brasil',
       url: 'https://www.espn.com.br/',
       interval_hours: 4,
-      icon: <SportsIcon />
     },
     {
       name: 'G1 Notícias',
       url: 'https://g1.globo.com/',
       interval_hours: 6,
-      icon: <SportsIcon />
     },
     {
       name: 'UOL Esporte',
       url: 'https://www.uol.com.br/esporte/',
       interval_hours: 8,
-      icon: <SportsIcon />
     }
   ];
 
@@ -107,9 +104,9 @@ const SimpleSiteForm: React.FC = () => {
   };
 
   return (
-    <Box>
-      <Typography variant="h5" gutterBottom>
-        🌐 Adicionar Site para Monitoramento
+    <Container maxWidth="md" sx={{ py: 2 }}>
+      <Typography variant="h5" gutterBottom sx={{ fontWeight: 700 }}>
+        Adicionar Site para Monitoramento
       </Typography>
       
       <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
@@ -118,131 +115,130 @@ const SimpleSiteForm: React.FC = () => {
 
       {success && (
         <Alert severity="success" sx={{ mb: 2 }}>
-          ✅ Site adicionado com sucesso! O sistema começará a monitorar automaticamente.
+          Site adicionado com sucesso! O sistema começará a monitorar automaticamente.
         </Alert>
       )}
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          ❌ {error}
+          {error}
         </Alert>
       )}
 
       {/* Sites Pré-definidos */}
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          🚀 Sites Populares (Clique para adicionar)
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
+          Sites Populares
         </Typography>
-        <Box 
-          sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-            gap: 2 
-          }}
-        >
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Clique em um dos sites abaixo para adicionar rapidamente
+        </Typography>
+        <Grid container spacing={2}>
           {predefinedSites.map((site, index) => (
-            <Card 
-              key={index}
-              sx={{ 
-                cursor: 'pointer',
-                '&:hover': { 
-                  backgroundColor: 'primary.light',
-                  color: 'white',
-                  '& .MuiTypography-root': { color: 'white' }
-                },
-                transition: 'all 0.3s'
-              }}
-              onClick={() => handlePredefinedSite(site)}
-            >
-              <CardContent sx={{ textAlign: 'center' }}>
-                {site.icon}
-                <Typography variant="h6" gutterBottom>
-                  {site.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  A cada {site.interval_hours}h
-                </Typography>
-              </CardContent>
-            </Card>
+            <Grid item xs={12} sm={6} md={4} key={index}>
+              <Card 
+                sx={{ 
+                  cursor: 'pointer',
+                  height: '100%',
+                  transition: 'all 0.3s',
+                  '&:hover': { 
+                    transform: 'translateY(-2px)',
+                    boxShadow: 3,
+                  }
+                }}
+                onClick={() => handlePredefinedSite(site)}
+              >
+                <CardContent sx={{ textAlign: 'center' }}>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    {site.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    A cada {site.interval_hours}h
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
           ))}
-        </Box>
+        </Grid>
       </Paper>
 
       {/* Formulário Manual */}
-      <Paper sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          ✏️ Adicionar Site Personalizado
-        </Typography>
-        
-        <form onSubmit={formik.handleSubmit}>
-          <Box display="flex" flexDirection="column" gap={2}>
-            <TextField
-              label="Nome do Site"
-              name="name"
-              value={formik.values.name}
-              onChange={formik.handleChange}
-              error={formik.touched.name && Boolean(formik.errors.name)}
-              helperText={formik.touched.name && formik.errors.name}
-              fullWidth
-              placeholder="Ex: ESPN Brasil"
-            />
-            
-            <TextField
-              label="URL do Site"
-              name="url"
-              value={formik.values.url}
-              onChange={formik.handleChange}
-              error={formik.touched.url && Boolean(formik.errors.url)}
-              helperText={formik.touched.url && formik.errors.url}
-              fullWidth
-              placeholder="Ex: https://www.espn.com.br/"
-            />
-            
-            <TextField
-              label="Intervalo de Verificação (horas)"
-              name="interval_hours"
-              type="number"
-              value={formik.values.interval_hours}
-              onChange={formik.handleChange}
-              error={formik.touched.interval_hours && Boolean(formik.errors.interval_hours)}
-              helperText={formik.touched.interval_hours && formik.errors.interval_hours}
-              inputProps={{ min: 1, max: 24 }}
-              fullWidth
-            />
-            
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={formik.values.is_active}
-                  onChange={formik.handleChange}
-                  name="is_active"
-                />
-              }
-              label="Ativar monitoramento automaticamente"
-            />
-            
-            <Button
-              type="submit"
-              variant="contained"
-              startIcon={loading ? <CircularProgress size={20} /> : <AddIcon />}
-              disabled={loading}
-              fullWidth
-              size="large"
-            >
-              {loading ? 'Adicionando...' : 'Adicionar Site'}
-            </Button>
+      <Card elevation={2}>
+        <CardContent sx={{ p: 3 }}>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 700 }}>
+            Adicionar Site Personalizado
+          </Typography>
+          
+          <Box component="form" onSubmit={formik.handleSubmit} sx={{ mt: 3 }}>
+            <Box display="flex" flexDirection="column" gap={2.5}>
+              <TextField
+                label="Nome do Site"
+                name="name"
+                value={formik.values.name}
+                onChange={formik.handleChange}
+                error={formik.touched.name && Boolean(formik.errors.name)}
+                helperText={formik.touched.name && formik.errors.name}
+                fullWidth
+                placeholder="Ex: ESPN Brasil"
+              />
+              
+              <TextField
+                label="URL do Site"
+                name="url"
+                value={formik.values.url}
+                onChange={formik.handleChange}
+                error={formik.touched.url && Boolean(formik.errors.url)}
+                helperText={formik.touched.url && formik.errors.url}
+                fullWidth
+                placeholder="Ex: https://www.espn.com.br/"
+              />
+              
+              <TextField
+                label="Intervalo de Verificação (horas)"
+                name="interval_hours"
+                type="number"
+                value={formik.values.interval_hours}
+                onChange={formik.handleChange}
+                error={formik.touched.interval_hours && Boolean(formik.errors.interval_hours)}
+                helperText={formik.touched.interval_hours && formik.errors.interval_hours}
+                inputProps={{ min: 1, max: 24 }}
+                fullWidth
+              />
+              
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formik.values.is_active}
+                    onChange={formik.handleChange}
+                    name="is_active"
+                  />
+                }
+                label="Ativar monitoramento automaticamente"
+              />
+              
+              <Button
+                type="submit"
+                variant="contained"
+                startIcon={loading ? <CircularProgress size={20} /> : <AddIcon />}
+                disabled={loading}
+                fullWidth
+                size="large"
+                sx={{ mt: 2 }}
+              >
+                {loading ? 'Adicionando...' : 'Adicionar Site'}
+              </Button>
+            </Box>
           </Box>
-        </form>
-      </Paper>
+        </CardContent>
+      </Card>
 
       {/* Informações */}
-      <Paper sx={{ p: 2, mt: 2, backgroundColor: 'info.light' }}>
-        <Typography variant="body2" color="info.contrastText">
-          💡 <strong>Dica:</strong> O sistema detecta automaticamente os seletores CSS do site. 
-          Você pode usar sites populares clicando nos cards acima ou adicionar sites personalizados.
+      <Paper sx={{ p: 2, mt: 3, backgroundColor: 'info.lighter' }}>
+        <Typography variant="body2" color="info.dark">
+          <strong>Dica:</strong> O sistema detecta automaticamente os seletores CSS do site. Você pode usar sites populares clicando nos cards acima ou adicionar sites personalizados.
         </Typography>
       </Paper>
-    </Box>
+    </Container>
   );
 };
 

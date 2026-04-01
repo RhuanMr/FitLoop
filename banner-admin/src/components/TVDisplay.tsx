@@ -13,7 +13,6 @@ const TVDisplay: React.FC = () => {
   useEffect(() => {
     fetchBanners();
     
-    // Atualizar banners a cada 5 minutos
     const interval = setInterval(fetchBanners, 5 * 60 * 1000);
     
     return () => clearInterval(interval);
@@ -23,7 +22,7 @@ const TVDisplay: React.FC = () => {
     if (banners.length > 0) {
       const interval = setInterval(() => {
         setCurrentIndex((prevIndex) => (prevIndex + 1) % banners.length);
-      }, 60000); // 60 segundos (1 minuto) por banner
+      }, 60000);
 
       return () => clearInterval(interval);
     }
@@ -37,7 +36,6 @@ const TVDisplay: React.FC = () => {
       const data = await getBanners({ status: 'active', include_scheduled: true });
       setBanners(data.banners || []);
       
-      // Resetar índice se necessário
       if (currentIndex >= (data.banners || []).length) {
         setCurrentIndex(0);
       }
@@ -71,7 +69,7 @@ const TVDisplay: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'linear-gradient(135deg, #E63946 0%, #A4212B 100%)',
           color: 'white',
         }}
       >
@@ -89,14 +87,14 @@ const TVDisplay: React.FC = () => {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'linear-gradient(135deg, #E63946 0%, #A4212B 100%)',
           color: 'white',
         }}
       >
         <Typography variant="h4" color="error" gutterBottom>
           Erro ao carregar banners
         </Typography>
-        <Button variant="contained" onClick={fetchBanners}>
+        <Button variant="contained" onClick={fetchBanners} sx={{ mt: 2 }}>
           Tentar Novamente
         </Button>
       </Box>
@@ -112,7 +110,7 @@ const TVDisplay: React.FC = () => {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'linear-gradient(135deg, #E63946 0%, #A4212B 100%)',
           color: 'white',
         }}
       >
@@ -134,11 +132,10 @@ const TVDisplay: React.FC = () => {
         height: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: 'linear-gradient(135deg, #E63946 0%, #A4212B 100%)',
         overflow: 'hidden',
       }}
     >
-      {/* Header - oculto no fullscreen */}
       {!isFullscreen && (
         <Paper
           elevation={3}
@@ -152,7 +149,7 @@ const TVDisplay: React.FC = () => {
           }}
         >
           <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-            🏋️ FitLoop - TV Display
+            FitLoop - TV Display
           </Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <IconButton
@@ -173,7 +170,6 @@ const TVDisplay: React.FC = () => {
         </Paper>
       )}
 
-      {/* Área principal do carrossel */}
       <Box
         sx={{
           flex: 1,
@@ -185,7 +181,6 @@ const TVDisplay: React.FC = () => {
           p: 4,
         }}
       >
-        {/* Banner atual */}
         <Box
           sx={{
             textAlign: 'center',
@@ -244,7 +239,6 @@ const TVDisplay: React.FC = () => {
           )}
         </Box>
 
-        {/* Indicadores */}
         {banners.length > 1 && (
           <Box
             sx={{
@@ -276,7 +270,6 @@ const TVDisplay: React.FC = () => {
           </Box>
         )}
 
-        {/* Botão de sair do fullscreen */}
         {isFullscreen && (
           <IconButton
             onClick={toggleFullscreen}
