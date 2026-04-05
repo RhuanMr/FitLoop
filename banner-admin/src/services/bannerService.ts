@@ -4,7 +4,7 @@ import { Banner, BannerStatus } from '../types/Banner';
 // Re-exportar tipos para facilitar importação
 export type { Banner, BannerStatus };
 
-const API_URL = 'http://localhost:4000';
+const API_URL = 'http://localhost:3333';
 
 // TODO: Pesquisar componentes para excluir e editar banners
 

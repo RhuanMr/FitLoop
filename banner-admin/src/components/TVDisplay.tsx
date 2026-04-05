@@ -70,7 +70,7 @@ const TVDisplay: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
           background: 'linear-gradient(135deg, #E63946 0%, #A4212B 100%)',
-          color: 'white',
+          color: '#888888',
         }}
       >
         <Typography variant="h4">Carregando banners...</Typography>
@@ -88,7 +88,7 @@ const TVDisplay: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
           background: 'linear-gradient(135deg, #E63946 0%, #A4212B 100%)',
-          color: 'white',
+          color: '#888888',
         }}
       >
         <Typography variant="h4" color="error" gutterBottom>
@@ -111,13 +111,13 @@ const TVDisplay: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
           background: 'linear-gradient(135deg, #E63946 0%, #A4212B 100%)',
-          color: 'white',
+          color: '#888888',
         }}
       >
         <Typography variant="h4" gutterBottom>
           Nenhum banner disponível
         </Typography>
-        <Typography variant="h6" color="rgba(255,255,255,0.8)">
+        <Typography variant="h6" color="#888888">
           Crie um banner para vê-lo aqui
         </Typography>
       </Box>
@@ -145,7 +145,7 @@ const TVDisplay: React.FC = () => {
             justifyContent: 'space-between',
             alignItems: 'center',
             background: 'rgba(0, 0, 0, 0.8)',
-            color: 'white',
+            color: '#888888',
           }}
         >
           <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
@@ -213,7 +213,7 @@ const TVDisplay: React.FC = () => {
           <Typography
             variant="h2"
             sx={{
-              color: 'white',
+              color: '#888888',
               textShadow: '2px 2px 4px rgba(0, 0, 0, 0.7)',
               marginBottom: '10px',
               fontWeight: 'bold',
@@ -227,7 +227,7 @@ const TVDisplay: React.FC = () => {
             <Typography
               variant="h5"
               sx={{
-                color: 'rgba(255, 255, 255, 0.9)',
+                color: '#888888',
                 textShadow: '1px 1px 2px rgba(0, 0, 0, 0.7)',
                 maxWidth: '800px',
                 margin: '0 auto',
@@ -258,11 +258,11 @@ const TVDisplay: React.FC = () => {
                   width: 15,
                   height: 15,
                   borderRadius: '50%',
-                  backgroundColor: index === currentIndex ? 'white' : 'rgba(255, 255, 255, 0.5)',
+                  backgroundColor: index === currentIndex ? '#888888' : 'rgba(136, 136, 136, 0.5)',
                   cursor: 'pointer',
                   transition: 'background-color 0.3s',
                   '&:hover': {
-                    backgroundColor: 'white',
+                    backgroundColor: '#888888',
                   },
                 }}
               />
@@ -278,7 +278,7 @@ const TVDisplay: React.FC = () => {
               top: 20,
               right: 20,
               backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              color: 'white',
+              color: '#888888',
               '&:hover': {
                 backgroundColor: 'rgba(0, 0, 0, 0.7)',
               },

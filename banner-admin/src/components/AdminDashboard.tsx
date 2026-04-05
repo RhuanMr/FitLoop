@@ -22,10 +22,10 @@ const AdminDashboard: React.FC = () => {
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%' }}>
       <AppBar position="static" sx={{ background: 'linear-gradient(135deg, #E63946 0%, #A4212B 100%)' }}>
         <Toolbar>
-          <Typography variant="h5" component="h1" sx={{ flexGrow: 1, fontWeight: 700 }}>
+          <Typography variant="h5" component="h1" sx={{ flexGrow: 1, fontWeight: 700, color: '#000000' }}>
             FitLoop - Admin de Banners
           </Typography>
-          <Typography variant="body2" sx={{ opacity: 0.9 }}>
+          <Typography variant="body2" sx={{ opacity: 0.9, color: '#000000' }}>
             Gerenciamento de conteúdo
           </Typography>
         </Toolbar>

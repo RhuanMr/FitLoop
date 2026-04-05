@@ -186,25 +186,25 @@ const SiteManagement: React.FC = () => {
         <TableContainer>
           <Table>
             <TableHead>
-              <TableRow sx={{ backgroundColor: 'grey.100' }}>
-                <TableCell sx={{ fontWeight: 700 }}>Nome</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>URL</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Intervalo</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Último Crawl</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 700 }}>Ações</TableCell>
+              <TableRow sx={{ backgroundColor: '#2a2a2a', borderBottom: '3px solid #E63946' }}>
+                <TableCell sx={{ fontWeight: 700, color: '#E63946', borderRight: '1px solid #E63946' }}>Nome</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: '#E63946', borderRight: '1px solid #E63946' }}>URL</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: '#E63946', borderRight: '1px solid #E63946' }}>Intervalo</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: '#E63946', borderRight: '1px solid #E63946' }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 700, color: '#E63946', borderRight: '1px solid #E63946' }}>Último Crawl</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 700, color: '#E63946' }}>Ações</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {sites.map((site) => (
-                <TableRow key={site.id} sx={{ '&:hover': { backgroundColor: 'action.hover' } }}>
-                  <TableCell sx={{ fontWeight: 500 }}>{site.name}</TableCell>
+                <TableRow key={site.id} sx={{ '&:hover': { backgroundColor: '#3a3a3a', borderLeft: '3px solid #E63946' }, borderBottom: '1px solid #3a3a3a' }}>
+                  <TableCell sx={{ fontWeight: 500, color: '#888888' }}>{site.name}</TableCell>
                   <TableCell>
                     <Typography variant="body2" color="primary" sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {site.url}
                     </Typography>
                   </TableCell>
-                  <TableCell>{site.interval_hours}h</TableCell>
+                  <TableCell sx={{ color: '#888888' }}>{site.interval_hours}h</TableCell>
                   <TableCell>
                     <Chip
                       label={site.is_active ? 'Ativo' : 'Inativo'}
@@ -212,7 +212,7 @@ const SiteManagement: React.FC = () => {
                       size="small"
                     />
                   </TableCell>
-                  <TableCell>{formatLastCrawled(site.last_crawled)}</TableCell>
+                  <TableCell sx={{ color: '#888888' }}>{formatLastCrawled(site.last_crawled)}</TableCell>
                   <TableCell align="right">
                     <Tooltip title="Testar Site">
                       <IconButton

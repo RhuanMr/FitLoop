@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Site, SuggestedPost } from '../types/Site';
 
-const API_URL = 'http://localhost:4000';
+const API_URL = 'http://localhost:3333';
 
 // Sites
 export async function getSites(): Promise<Site[]> {

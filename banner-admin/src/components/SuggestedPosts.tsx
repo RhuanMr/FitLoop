@@ -144,6 +144,14 @@ const SuggestedPosts: React.FC = () => {
             variant={viewMode === 'grid' ? 'contained' : 'outlined'}
             onClick={() => setViewMode('grid')}
             size="small"
+            sx={{
+              backgroundColor: viewMode === 'grid' ? '#E63946' : 'transparent',
+              borderColor: '#E63946',
+              color: '#000000',
+              '&:hover': {
+                backgroundColor: viewMode === 'grid' ? '#A4212B' : 'rgba(230, 57, 70, 0.1)',
+              }
+            }}
           >
             Grade
           </Button>
@@ -151,6 +159,14 @@ const SuggestedPosts: React.FC = () => {
             variant={viewMode === 'table' ? 'contained' : 'outlined'}
             onClick={() => setViewMode('table')}
             size="small"
+            sx={{
+              backgroundColor: viewMode === 'table' ? '#E63946' : 'transparent',
+              borderColor: '#E63946',
+              color: '#000000',
+              '&:hover': {
+                backgroundColor: viewMode === 'table' ? '#A4212B' : 'rgba(230, 57, 70, 0.1)',
+              }
+            }}
           >
             Tabela
           </Button>
@@ -247,18 +263,18 @@ const SuggestedPosts: React.FC = () => {
           <TableContainer>
             <Table>
               <TableHead>
-                <TableRow sx={{ backgroundColor: 'grey.100' }}>
-                  <TableCell sx={{ fontWeight: 700 }}>Imagem</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Título</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Fonte</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 700 }}>Ações</TableCell>
+                <TableRow sx={{ backgroundColor: '#2a2a2a', borderBottom: '3px solid #E63946' }}>
+                  <TableCell sx={{ fontWeight: 700, color: '#E63946', borderRight: '1px solid #E63946' }}>Imagem</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#E63946', borderRight: '1px solid #E63946' }}>Título</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#E63946', borderRight: '1px solid #E63946' }}>Fonte</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#E63946', borderRight: '1px solid #E63946' }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#E63946', borderRight: '1px solid #E63946' }}>Data</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700, color: '#E63946' }}>Ações</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {posts.map((post) => (
-                  <TableRow key={post.id} sx={{ '&:hover': { backgroundColor: 'action.hover' } }}>
+                  <TableRow key={post.id} sx={{ '&:hover': { backgroundColor: '#3a3a3a', borderLeft: '3px solid #E63946' }, borderBottom: '1px solid #3a3a3a' }}>
                     <TableCell>
                       <img
                         src={post.image_url}
@@ -267,11 +283,11 @@ const SuggestedPosts: React.FC = () => {
                       />
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" sx={{ maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <Typography variant="body2" sx={{ maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', color: '#888888' }}>
                         {post.title}
                       </Typography>
                     </TableCell>
-                    <TableCell>{post.source_site}</TableCell>
+                    <TableCell sx={{ color: '#888888' }}>{post.source_site}</TableCell>
                     <TableCell>
                       <Chip
                         label={post.is_approved ? 'Aprovado' : 'Pendente'}
@@ -279,7 +295,7 @@ const SuggestedPosts: React.FC = () => {
                         size="small"
                       />
                     </TableCell>
-                    <TableCell>{formatDate(post.created_at)}</TableCell>
+                    <TableCell sx={{ color: '#888888' }}>{formatDate(post.created_at)}</TableCell>
                     <TableCell align="right">
                       {!post.is_approved && (
                         <>

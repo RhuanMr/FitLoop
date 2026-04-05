@@ -118,7 +118,7 @@ const BannerCarousel: React.FC = () => {
             }}
           />
           
-          <Box sx={{ p: 2, textAlign: 'center', width: '100%', backgroundColor: '#fff' }}>
+          <Box sx={{ p: 2, textAlign: 'center', width: '100%', backgroundColor: '#2a2a2a' }}>
             <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
               {currentBanner.title}
             </Typography>

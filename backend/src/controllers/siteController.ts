@@ -163,6 +163,31 @@ export const testSite = async (req: Request, res: Response) => {
     console.log('Testando site:', site.name);
     const result = await crawlerService.testSite(site);
 
+    // Se encontrou posts, salvar no banco de dados
+    if (result.success && result.posts.length > 0) {
+      console.log(`💾 Salvando ${result.posts.length} posts no banco de dados...`);
+      
+      try {
+        const { error: insertError } = await supabase
+          .from('suggested_posts')
+          .insert(result.posts);
+
+        if (insertError) {
+          console.log('⚠️ Erro ao salvar posts:', insertError);
+          // Não falhar a requisição, apenas avisar no console
+        } else {
+          console.log(`✅ ${result.posts.length} posts salvos com sucesso!`);
+          // Atualizar o last_crawled do site
+          await supabase
+            .from('sites')
+            .update({ last_crawled: new Date().toISOString() })
+            .eq('id', id);
+        }
+      } catch (saveError) {
+        console.log('❌ Erro geral ao salvar posts:', saveError);
+      }
+    }
+
     return res.json(result);
     
   } catch (error) {
